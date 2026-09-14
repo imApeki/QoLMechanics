@@ -1,0 +1,6 @@
+name: QoLMechanics
+version: '${version}'
+
+main: im.apeki.qolmechanics.QoLMechanicsPlugin
+api-version: '1.20'
+load: POSTWORLD
