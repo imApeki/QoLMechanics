@@ -23,3 +23,15 @@ frames:
     unfix: "SHEARS"
   sound:
     enabled: true
+transfer:
+  enabled: true
+  max-distance: 3.0
+  messages:
+    sender:
+      enabled: true
+      text: "<green>Вы передали <item> x<amount> игроку <receiver>"
+    receiver:
+      enabled: true
+      text: "<green>Игрок <sender> передал вам <item> x<amount>"
+  sound:
+    enabled: true
