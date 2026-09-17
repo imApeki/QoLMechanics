@@ -1,0 +1,25 @@
+parry:
+  enabled: true
+  window-ms: 250
+  knockback-power: 1.2
+  stun-duration-ticks: 60 # 20 тиков = 1 секунда (60 = 3 сек)
+  sound:
+    enabled: true
+    type: "ITEM_SHIELD_BLOCK"
+    volume: 1.0
+    pitch: 0.8
+  particle:
+    enabled: true
+    type: "DUST_PILLAR"
+    count: 15
+frames:
+  enabled: true
+  require-shift: true
+  tools:
+    invisible: "SHEARS"
+    visible: "LEATHER"
+    fix:
+      - "*GLASS_PANE"
+    unfix: "SHEARS"
+  sound:
+    enabled: true

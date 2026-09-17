@@ -4,3 +4,6 @@ version: '${version}'
 main: im.apeki.qolmechanics.QoLMechanicsPlugin
 api-version: '1.20'
 load: POSTWORLD
+
+libraries:
+  - org.jetbrains.kotlin:kotlin-stdlib:2.3.20

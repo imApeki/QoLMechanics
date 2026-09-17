@@ -1,14 +1,17 @@
 package im.apeki.qolmechanics
 
+import im.apeki.qolmechanics.features.frames.FrameModule
+import im.apeki.qolmechanics.features.parry.ParryModule
 import org.bukkit.plugin.java.JavaPlugin
 
 class QoLMechanicsPlugin : JavaPlugin() {
 
     override fun onEnable() {
-        // Plugin startup logic
-    }
+        saveDefaultConfig()
+        config.options().copyDefaults(true)
+        saveConfig()
 
-    override fun onDisable() {
-        // Plugin shutdown logic
+        ParryModule(this).init()
+        FrameModule(this).init()
     }
 }
