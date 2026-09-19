@@ -7,3 +7,6 @@ load: POSTWORLD
 
 libraries:
   - org.jetbrains.kotlin:kotlin-stdlib:2.3.20
+
+commands:
+  qol:

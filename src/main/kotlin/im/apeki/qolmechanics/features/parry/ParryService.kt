@@ -7,25 +7,28 @@ import org.bukkit.Sound
 import org.bukkit.block.data.BlockData
 import org.bukkit.entity.LivingEntity
 import org.bukkit.entity.Player
+import org.bukkit.event.entity.EntityDamageByEntityEvent
+import org.bukkit.event.entity.EntityDamageEvent
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
-import java.util.UUID
 
 class ParryService(
     private val config: ParryConfig,
     private val plugin: QoLMechanicsPlugin
 ) {
-    private val shieldRaiseTimes = mutableMapOf<UUID, Long>()
 
-    fun markShieldRaised(player: Player) {
-        shieldRaiseTimes[player.uniqueId] = System.currentTimeMillis()
-    }
+    fun tryParry(defender: Player, attacker: LivingEntity, event: EntityDamageByEntityEvent): Boolean {
+        if (event.cause != EntityDamageEvent.DamageCause.ENTITY_ATTACK && event.cause != EntityDamageEvent.DamageCause.ENTITY_SWEEP_ATTACK) return false
 
-    fun tryParry(defender: Player, attacker: LivingEntity): Boolean {
-        val raiseTime = shieldRaiseTimes[defender.uniqueId] ?: return false
-        val timePassed = System.currentTimeMillis() - raiseTime
+        val attackerDir = attacker.location.direction.normalize()
+        val defenderDir = defender.location.direction.normalize()
+        
+        if (attackerDir.dot(defenderDir) > -0.5) return false
 
-        if (timePassed <= config.windowMs) {
+        val windowTicks = (config.windowMs / 50.0).toInt()
+        val timePassedTicks = defender.activeItemUsedTime
+
+        if (timePassedTicks <= windowTicks) {
             applyParryEffects(defender, attacker)
             return true
         }
@@ -38,8 +41,13 @@ class ParryService(
         knockbackDir.multiply(config.knockbackPower)
         attacker.velocity = knockbackDir
 
-        attacker.addPotionEffect(PotionEffect(PotionEffectType.SLOW, config.stunDurationTicks, 2))
-        attacker.addPotionEffect(PotionEffect(PotionEffectType.WEAKNESS, config.stunDurationTicks, 0))
+        if (attacker is Player) {
+            attacker.addPotionEffect(PotionEffect(PotionEffectType.SLOW_DIGGING, config.stunDurationTicks, 3, false, false, true))
+            attacker.addPotionEffect(PotionEffect(PotionEffectType.SLOW, config.stunDurationTicks, 2, false, false, true))
+        } else {
+            attacker.addPotionEffect(PotionEffect(PotionEffectType.SLOW, config.stunDurationTicks, 2))
+            attacker.addPotionEffect(PotionEffect(PotionEffectType.WEAKNESS, config.stunDurationTicks, 0))
+        }
 
         if (config.soundEnabled) {
             try {
@@ -90,7 +98,5 @@ class ParryService(
                 plugin.logger.warning("Неверное название частицы в конфиге: ${config.particleType}")
             }
         }
-
-        shieldRaiseTimes.remove(defender.uniqueId)
     }
 }

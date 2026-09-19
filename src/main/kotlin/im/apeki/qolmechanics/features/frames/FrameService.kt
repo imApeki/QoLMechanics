@@ -7,42 +7,41 @@ import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.meta.Damageable
 
-class FrameService(private val config: FrameConfig) {
+class FrameService(
+    private val config: FrameConfig,
+    private val cachedInvisible: Set<Material>,
+    private val cachedVisible: Set<Material>,
+    private val cachedFix: Set<Material>,
+    private val cachedUnfix: Set<Material>
+) {
 
     fun handleTool(player: Player, frame: ItemFrame, tool: ItemStack): Boolean {
         if (config.requireShift && !player.isSneaking) return false
 
-        val toolName = tool.type.name
+        val toolType = tool.type
 
-        if (toolName == config.toolUnfix && frame.isFixed) {
+        if (cachedUnfix.contains(toolType) && frame.isFixed) {
             frame.isFixed = false
             consumeItem(tool)
             playSound(player)
             return true
         }
 
-        val isFixTool = config.fixTools.any { pattern ->
-            if (pattern.startsWith("*")) {
-                toolName.endsWith(pattern.drop(1))
-            } else {
-                toolName == pattern
-            }
-        }
-        if (isFixTool && !frame.isFixed) {
+        if (cachedFix.contains(toolType) && !frame.isFixed) {
             frame.isFixed = true
             consumeItem(tool)
             playSound(player)
             return true
         }
 
-        if (toolName == config.toolVisible && !frame.isVisible) {
+        if (cachedVisible.contains(toolType) && !frame.isVisible) {
             frame.isVisible = true
             consumeItem(tool)
             playSound(player)
             return true
         }
 
-        if (toolName == config.toolInvisible && frame.isVisible) {
+        if (cachedInvisible.contains(toolType) && frame.isVisible) {
             frame.isVisible = false
             consumeItem(tool)
             playSound(player)

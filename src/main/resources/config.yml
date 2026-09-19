@@ -1,30 +1,41 @@
 parry:
+  # Включить ли эту фичу?
   enabled: true
-  window-ms: 250
+  # Окно времени (в миллисекундах) после поднятия щита, в течение которого работает парирование
+  window-ms: 500
+  # Множитель силы откидывания нападающего
   knockback-power: 1.2
-  stun-duration-ticks: 60 # 20 тиков = 1 секунда (60 = 3 сек)
+  # Длительность оглушения в тиках
+  stun-duration-ticks: 60
+  # Звук и частицы при парировании
   sound:
     enabled: true
-    type: "ITEM_SHIELD_BLOCK"
+    type: "ITEM_SHIELD_BLOCK" # Список https://jd.papermc.io/paper/26.3/org/bukkit/Sound.html
     volume: 1.0
     pitch: 0.8
   particle:
     enabled: true
-    type: "DUST_PILLAR"
+    type: "DUST_PILLAR" # Список https://jd.papermc.io/paper/26.3/org/bukkit/Particle.html
     count: 15
+
 frames:
   enabled: true
+  # Требовать ли зажатый Shift для применения инструментов?
   require-shift: true
+
+  # Настройка предметов для взаимодействия
+  # Поддерживает регулярные выражения
   tools:
     invisible: "SHEARS"
     visible: "LEATHER"
-    fix:
-      - "*GLASS_PANE"
+    fix: ".*GLASS_PANE"
     unfix: "SHEARS"
   sound:
     enabled: true
+
 transfer:
   enabled: true
+  # Максимальное расстояние (в блоках), на котором сработает передача
   max-distance: 3.0
   messages:
     sender:
