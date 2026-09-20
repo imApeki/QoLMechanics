@@ -3,6 +3,12 @@ plugins {
     id("com.gradleup.shadow") version "9.6.1"
 }
 
+version = providers
+    .gradleProperty("version")
+    .get()
+
+val resolvedVersion = version.toString()
+
 repositories {
     mavenCentral()
     maven("https://repo.papermc.io/repository/maven-public/")
@@ -20,6 +26,15 @@ kotlin {
 tasks {
     build {
         dependsOn(shadowJar)
+    }
+
+    register("printVersion") {
+        group = "help"
+        description = "Prints the project version for automation scripts."
+
+        doLast {
+            println(resolvedVersion)
+        }
     }
 
     processResources {

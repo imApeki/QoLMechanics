@@ -1,0 +1,87 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: gradle
+
+      - name: Resolve project version
+        id: version
+        run: |
+          VERSION="$(./gradlew -q printVersion --no-daemon --stacktrace | tail -n 1 | tr -d '\r')"
+          if [ -z "$VERSION" ] || [ "$VERSION" = "unspecified" ]; then
+            echo "Failed to resolve project version"
+            exit 1
+          fi
+
+          echo "Resolved version: $VERSION"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "artifact=build/libs/QoLMechanics-$VERSION.jar" >> "$GITHUB_OUTPUT"
+
+      - name: Check for existing release
+        id: release_check
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const tag = '${{ steps.version.outputs.version }}';
+            try {
+              await github.rest.repos.getReleaseByTag({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                tag
+              });
+              core.notice(`Release ${tag} already exists. Workflow will stop.`);
+              core.setOutput('exists', 'true');
+            } catch (error) {
+              if (error.status === 404) {
+                core.setOutput('exists', 'false');
+                return;
+              }
+              throw error;
+            }
+
+      - name: Stop if release already exists
+        if: steps.release_check.outputs.exists == 'true'
+        run: |
+          echo "Release ${{ steps.version.outputs.version }} already exists. Nothing to do."
+          exit 0
+
+      - name: Build plugin
+        if: steps.release_check.outputs.exists != 'true'
+        run: ./gradlew build --no-daemon
+
+      - name: Verify artifact
+        if: steps.release_check.outputs.exists != 'true'
+        run: |
+          if [ ! -f "${{ steps.version.outputs.artifact }}" ]; then
+            echo "Artifact not found: ${{ steps.version.outputs.artifact }}"
+            ls -la build/libs || true
+            exit 1
+          fi
+
+      - name: Create GitHub release
+        if: steps.release_check.outputs.exists != 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.version }}
+          name: ${{ steps.version.outputs.version }}
+          generate_release_notes: true
+          files: ${{ steps.version.outputs.artifact }}
